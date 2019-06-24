@@ -1,0 +1,10 @@
+#!/bin/sh
+
+PATH="/usr/local/bin:$PATH"
+
+mix test_all
+RES=$?
+if [ $RES -ne 0  ]
+then
+  exit $RES
+fi
