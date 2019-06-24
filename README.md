@@ -1,5 +1,12 @@
 # IPIP.net File Format Decoder
 
+[![Build Status](https://travis-ci.org/seniverse/ipdb_decoder.svg?branch=master)](https://travis-ci.org/seniverse/ipdb_decoder)
+[![Coverage Status](https://coveralls.io/repos/github/seniverse/ipdb_decoder/badge.svg?branch=master)](https://coveralls.io/github/seniverse/ipdb_decoder?branch=master)
+[![hex.pm version](https://img.shields.io/hexpm/v/ipdb_decoder.svg)](https://hex.pm/packages/ipdb_decoder)
+[![hex.pm downloads](https://img.shields.io/hexpm/dt/ipdb_decoder.svg)](https://hex.pm/packages/ipdb_decoder)
+![hex.pm license](https://img.shields.io/hexpm/l/ipdb_decoder.svg)
+![GitHub top language](https://img.shields.io/github/languages/top/seniverse/ipdb_decoder.svg)
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
