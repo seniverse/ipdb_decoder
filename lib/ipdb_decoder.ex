@@ -17,11 +17,16 @@ defmodule IPDBDecoder do
   """
 
   alias IPDBDecoder.Database
+  alias IPDBDecoder.MetaData
   alias IPDBDecoder.Tire
 
+  @type decode_options :: map
   @type decoded_value :: :cache | :end | binary | boolean | list | map | number
   @type lookup_result :: {:ok, decoded_value} | {:error, term}
   @type parse_result :: {:ok, Database.t()} | {:error, term}
+
+  @doc false
+  def default_options, do: []
 
   @spec parse_database_file(String.t()) :: parse_result
   def parse_database_file(path) do
@@ -39,7 +44,7 @@ defmodule IPDBDecoder do
   def parse_database(content) do
     case content do
       <<length::size(32), meta::binary-size(length), chunks::binary>> ->
-        meta = Poison.decode!(meta)
+        meta = MetaData.parse(meta)
         database = %Database{meta: meta, chunks: chunks}
         v4node = Tire.find_v4node(database)
         {:ok, %Database{database | v4node: v4node}}
@@ -49,19 +54,23 @@ defmodule IPDBDecoder do
     end
   end
 
-  @spec lookup(Database.t(), String.t()) :: lookup_result
-  def lookup(%IPDBDecoder.Database{} = database, ipstring)
+  @spec lookup(Database.t(), String.t() | :inet.ip_address(), decode_options) :: lookup_result
+  def lookup(parse_result, _, options \\ [])
+
+  def lookup(%IPDBDecoder.Database{} = database, ipstring, options)
       when is_binary(ipstring) do
+    options = Keyword.merge(default_options(), options)
+
     case :inet.parse_address(String.to_charlist(ipstring)) do
-      {:ok, ip} -> lookup(database, ip)
+      {:ok, ip} -> lookup(database, ip, options)
       {:error, _} -> {:error, :invalid_ipaddr}
     end
   end
 
-  @spec lookup(Database.t(), :inet.ip_address()) :: lookup_result
-  def lookup(%Database{} = database, ip)
+  def lookup(%Database{} = database, ip, options)
       when is_tuple(ip) do
-    Tire.find(database, ip)
+    options = Keyword.merge(default_options(), options)
+    Tire.find(database, ip, options)
   end
 
   @doc """
@@ -78,11 +87,11 @@ defmodule IPDBDecoder do
       ...> |> IPDBDecoder.pipe_lookup({127, 0, 0, 1})
       {:ok, %{...}}
   """
-  @spec pipe_lookup(parse_result, :inet.ip_address()) :: lookup_result
-  def pipe_lookup(parse_result, ip)
+  @spec pipe_lookup(parse_result, :inet.ip_address(), decode_options) :: lookup_result
+  def pipe_lookup(parse_result, ip, options \\ [])
 
-  def pipe_lookup({:error, _} = error, _), do: error
+  def pipe_lookup({:error, _} = error, _, _), do: error
 
-  def pipe_lookup({:ok, database}, ip),
-    do: lookup(database, ip)
+  def pipe_lookup({:ok, database}, ip, options),
+    do: lookup(database, ip, options)
 end
